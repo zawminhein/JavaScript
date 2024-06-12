@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>TODO</title>
+   <link rel="stylesheet" href="css/all.min.css">
+   <link rel="stylesheet" href="css/bootstrap.min.css">
+
+</head>
+<body>
+   <nav class="navbar bg-primary navbar-dark">
+      <div class="container" style="max-width: 800px;">
+         <a href="#" class="navbar-brand">TODO <span class="badge bg-danger ms-2">0</span></a>
+         <ul class="navbar nav">
+            <li class="nav-item">
+               <a href="#" id="clear" class="nav-link text-light">Clear</a>
+            </li>
+         </ul>
+      </div>
+   </nav>
+
+   <div class="container" style="max-width: 800px;">
+      <div class="input-group my-4">
+         <input type="text" class="form-control">
+         <button class="btn btn-primary">ADD</button>
+      </div>
+
+      <ul class="list-group" id="todo"></ul>
+      <ul class="list-group opacity-50 mt-4" id="done"></ul>
+   </div>
+
+   <script>
+      document.querySelector("button").onclick = function(){
+         let text = document.querySelector("input").value;
+         if( text == "" ) return false;
+
+         createItem(text);
+         saveData(text);
+         updateCount();
+
+         document.querySelector("input").value = "";
+         document.querySelector("input").focus();
+      }
+
+      document.querySelector("input").onkeydown = function(e) {
+         if( e.key == "Enter" ) document.querySelector("button").onclick();
+      }
+
+      function createItem(text, done = false) {
+         let li = document.createElement("li");
+         li.textContent = text;
+         li.classList.add("list-group-item");
+
+         let del = document.createElement("a");
+         del.setAttribute("href", "#");
+         // del.textContent = "DEL";
+         del.classList.add("fas", "fa-trash", "text-danger", "float-end");
+         del.onclick = function() {
+            li.remove();
+            updateCount();
+            deleteData(text);
+         }
+         li.appendChild(del);
+
+         let check = document.createElement("a");
+         check.setAttribute("href", "#");
+         check.classList.add("fas", "fa-check","text-primary", "float-start", "me-2");
+         check.onclick = function() {
+            document.querySelector("#done").appendChild(li);
+            check.remove();
+            updateCount();
+            checkData(text);
+
+         }
+         if(!done) li.appendChild(check);
+
+         if(done){
+            document.querySelector("#done").appendChild(li);
+         } else {
+            document.querySelector("#todo").appendChild(li);
+         }
+      }
+      
+      function updateCount() {
+         document.querySelector(".badge").textContent = 
+         document.querySelectorAll("#todo li").length;
+      }
+      
+      document.querySelector("#clear").onclick = function() {
+         document.querySelector("#done").textContent = "";
+         // clearData(done);
+         // deleteData(text);
+         
+      }
+      
+      let data = getData();
+      console.log("Data: ", data);
+      data.map( item => {
+         // console.log("Item: ", item);
+         if(item && item.text) {
+            createItem(item.text, item.done);
+         }
+      });
+
+      function getData() {
+         return JSON.parse( localStorage.getItem("data")) || [];
+      }
+
+      function saveData(text) {
+         let data = getData();
+         data.push({ text, done: false });
+         localStorage.setItem("data", JSON.stringify(data));
+      }
+
+      function deleteData(text) {
+         let data = getData();
+         let result = data.filter( item => item.text != text);
+         localStorage.setItem("data", JSON.stringify(result));
+      }
+
+      function checkData(text) {
+         let data = getData();
+         let result = data.map( item => {
+            if( item.text == text ) item.done = true;
+            return item;
+         });
+         localStorage.setItem("data", JSON.stringify(result));
+      }
+
+      // function clearData(done) {
+      //    let data = getData();
+      //    let result = data.filter( item => item.done = done);
+         
+      //    localStorage.setItem("data", JSON.stringify(result));
+      // }
+   </script>
+</body>
+</html>
